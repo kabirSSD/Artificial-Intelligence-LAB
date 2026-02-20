@@ -1,0 +1,92 @@
+BFS.txt
+##best_first_search(manhattan_distance)
+
+
+import heapq
+
+# Goal state
+GOAL_STATE = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 0]
+]
+
+# Possible moves: Left, Right, Up, Down
+ROW = [0, 0, -1, 1]
+COL = [-1, 1, 0, 0]
+
+
+def manhattan_distance(current, goal):
+    """Calculate Manhattan Distance heuristic"""
+    position = {}
+    distance = 0
+
+    for i in range(3):
+        for j in range(3):
+            position[goal[i][j]] = (i, j)
+
+    for i in range(3):
+        for j in range(3):
+            value = current[i][j]
+            if value != 0:
+                x, y = position[value]
+                distance += abs(i - x) + abs(j - y)
+
+    return distance
+
+
+def find_blank(board):
+    """Find position of blank (0)"""
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == 0:
+                return i, j
+
+
+def board_to_tuple(board):
+    """Convert board to tuple for visited set"""
+    return tuple(tuple(row) for row in board)
+
+
+def best_first_search(start_state):
+    priority_queue = []
+    visited = set()
+
+    h = manhattan_distance(start_state, GOAL_STATE)
+    heapq.heappush(priority_queue, (h, start_state))
+
+    while priority_queue:
+        h, current = heapq.heappop(priority_queue)
+
+        print("Heuristic =", h)
+        for row in current:
+            print(row)
+        print()
+
+        if current == GOAL_STATE:
+            print("Goal Reached!")
+            return
+
+        visited.add(board_to_tuple(current))
+        x, y = find_blank(current)
+
+        for k in range(4):
+            nx, ny = x + ROW[k], y + COL[k]
+
+            if 0 <= nx < 3 and 0 <= ny < 3:
+                new_board = [r[:] for r in current]
+                new_board[x][y], new_board[nx][ny] = new_board[nx][ny], new_board[x][y]
+
+                if board_to_tuple(new_board) not in visited:
+                    new_h = manhattan_distance(new_board, GOAL_STATE)
+                    heapq.heappush(priority_queue, (new_h, new_board))
+
+
+# Initial state
+start_state = [
+    [1, 2, 3],
+    [4, 6, 0],
+    [7, 5, 8]
+]
+
+best_first_search(start_state)
