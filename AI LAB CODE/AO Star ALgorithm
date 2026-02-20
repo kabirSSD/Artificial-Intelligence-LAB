@@ -1,0 +1,65 @@
+AO_star_algorithm.txt
+import heapq
+goal_state = [ [1, 2, 3], [4, 5, 6], [7, 8, 0]]
+def manhattan(state):
+    pos = {}
+    for i in range (3):
+        for j in range (3):
+            pos[goal_state[i][j]] = (i,j)
+    dist = 0
+    for i in range (3):
+        for j in range (3):
+            val = state[i][j]
+            if val != 0:
+                x,y = pos[val]
+                dist += abs(i-x) + abs(j-y)
+    return dist
+
+def find_blank(state):
+    for i in range(3):
+        for j in range(3):
+            if state[i][j] == 0:
+                return i, j
+
+def get_neighbors(state):
+    neighbors = []
+    x, y = find_blank(state)
+    moves = [(-1,0),(1,0),(0,-1),(0,1)]
+    for dx, dy in moves:
+        nx, ny = x+dx, y+dy
+        if 0 <= nx < 3 and 0 <= ny < 3:
+            new_state = [row[:] for row in state]  # deep copy of list
+            new_state[x][y], new_state[nx][ny] = new_state[nx][ny], new_state[x][y]
+            neighbors.append(new_state)
+    return neighbors
+
+def ao_star(start_state):
+    open_list = []
+    heapq.heappush(open_list, (manhattan(start_state), 0, start_state, [start_state]))
+    visited = set()
+    def state_to_tuple(state):
+        return tuple(tuple(row) for row in state)
+
+    while open_list:
+        f, depth, current, path = heapq.heappop(open_list)
+
+        if current == goal_state:
+            print ("Goal State Reached")
+            print ("Depth (Moves):", depth)
+            print("Path:")
+            for step in path:
+                for row in step:
+                    print(row)
+                print ()
+            return
+
+        visited.add(state_to_tuple(current))
+        for neighbor in get_neighbors(current):
+            if state_to_tuple(neighbor) not in visited:
+                g = depth + 1
+                h = manhattan(neighbor)
+                heapq.heappush(open_list, (g+h, g, neighbor, path + [neighbor]))
+    print ("No Solution Found")
+
+start_state = [ [1, 2, 3], [4, 0, 6], [7, 5, 8]]
+ao_star(start_state)
